@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from .database import Base, DB_SECRET_KEY
-from .encrypted_string import EncryptedString
+from sqlalchemy_utils import EncryptedType
 
 
 class User(Base):
@@ -40,8 +40,8 @@ class Picture(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     id_car = Column(Integer, ForeignKey("car.id"), nullable=False)
-    description = Column(EncryptedString(key=DB_SECRET_KEY))
-    url = Column(EncryptedString(key=DB_SECRET_KEY))
+    description = Column(EncryptedType(String, key=DB_SECRET_KEY))
+    url = Column(EncryptedType(String, key=DB_SECRET_KEY))
 
    # 🔗 relationship hacia Brand
     car = relationship("Car", back_populates="pictures")

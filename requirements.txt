@@ -1,6 +1,7 @@
 fastapi
 uvicorn[standard]
 sqlalchemy
+sqlalchemy_utils
 databases[postgresql]
 psycopg2-binary
 python-jose[cryptography]
