@@ -5,8 +5,9 @@ class PictureBase(BaseModel):
     description: str
     url: str
 
-class PictureCreate(PictureBase):
-    pass
+class PictureCreate(BaseModel):
+    description: str
+    url: str
 
 class PictureOut(PictureBase):
     id: int

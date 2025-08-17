@@ -13,15 +13,16 @@ class EncryptedString(TypeDecorator):
         """ Se ejecuta al guardar -> cifra """
         if value is None:
             return None
-        # usamos función de Postgres directamente
-        return Session.object_session(self)._execute_clauseelement(
-            text("SELECT pgp_sym_encrypt(:value, :key)").bindparams(value=value, key=self.key)
-        ).scalar()
+        # Se encripta en Python, no con SQL
+        from cryptography.fernet import Fernet
+        f = Fernet(self.key)
+        return f.encrypt(value.encode())
 
-    def process_result_value(self, value, dialect):
+
+def process_result_value(self, value, dialect):
         """ Se ejecuta al leer -> descifra """
         if value is None:
             return None
-        return Session.object_session(self)._execute_clauseelement(
-            text("SELECT pgp_sym_decrypt(:value, :key)").bindparams(value=value, key=self.key)
-        ).scalar()
+        from cryptography.fernet import Fernet
+        f = Fernet(self.key)
+        return f.decrypt(value).decode()
