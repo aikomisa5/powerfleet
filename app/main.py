@@ -100,7 +100,6 @@ def post_brand(
         current_admin: models.User = Depends(auth_service.get_current_admin_user),
         db: Session = Depends(database.get_db)
 ):
-    breakpoint()
     filters = {
         "name": brand.name
     }
