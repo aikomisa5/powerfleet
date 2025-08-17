@@ -120,7 +120,7 @@ def get_cars(
     db_cars = car_service.get_cars(db, filters)
     return db_cars
 
-@app.post("/brands/{id_brand}/cars", response_model=schemas.BrandOut)
+@app.post("/brands/{id_brand}/cars", response_model=schemas.CarOut)
 def post_car(
         id_brand: int,
         car: schemas.CarCreate,
