@@ -16,7 +16,14 @@ def get_drive_service():
     creds = service_account.Credentials.from_service_account_info(info)
     return build("drive", "v3", credentials=creds)
 
-def get_picture_raw(url: str):
+def get_picture_raw(db: Session, id: int):
+    filters = {
+        "id": id
+    }
+    pictures = get_pictures(db, filters)
+    if len(pictures) == 0:
+        raise ValueError(f"Pics not found for filters: {filters}")
+    url = pictures[0]['url']
     match = re.search(r'/d/([a-zA-Z0-9_-]+)', url)
     file_id = match.group(1) if match else None
 
@@ -41,6 +48,8 @@ def get_pictures(db: Session, filters: dict = None):
     if filters:
         if "id_car" in filters:
             query = query.filter(Picture.id_car == filters["id_car"])
+        if "id" in filters:
+            query = query.filter(Picture.id == filters["id"])
 
     return query.all()
 

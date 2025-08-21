@@ -174,9 +174,12 @@ def post_picture(
         raise HTTPException(status_code=500, detail="Something went wrong")
 
 
-@app.get("/brands/{id_brand}/cars/{id_car}/pictures/{url}")
+@app.get("/brands/{id_brand}/cars/{id_car}/pictures/{id_picture}")
 def get_picture_raw(
-        url: str,
+        id_brand: int,
+        id_car: int,
+        id_picture: int,
         current_admin: models.User = Depends(auth_service.get_current_admin_user),  # Only admins can register
+        db: Session = Depends(database.get_db)
 ):
-    return picture_service.get_picture_raw(url)
+    return picture_service.get_picture_raw(db, id_picture)
