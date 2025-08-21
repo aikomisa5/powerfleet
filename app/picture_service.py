@@ -8,15 +8,18 @@ import io
 import re
 import os
 import json
-from dotenv import load_dotenv
 
-load_dotenv()
+SERVICE_ACCOUNT_PATH = "./etc/secrets/powerfleet-google-service-account.json"
 
 
 def get_drive_service():
-    json_str = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
-    info = json.loads(json_str)
-    creds = service_account.Credentials.from_service_account_info(info)
+    if not os.path.exists(SERVICE_ACCOUNT_PATH):
+        raise FileNotFoundError(f"Service account file not found at {SERVICE_ACCOUNT_PATH}")
+
+    google_account_service_json = None
+    with open(SERVICE_ACCOUNT_PATH, "r") as f:
+        google_account_service_json = json.load(f)
+    creds = service_account.Credentials.from_service_account_info(google_account_service_json)
     return build("drive", "v3", credentials=creds)
 
 def get_picture_raw(db: Session, id: int):
