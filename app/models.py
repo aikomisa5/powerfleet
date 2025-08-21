@@ -41,7 +41,7 @@ class Picture(Base):
     id = Column(Integer, primary_key=True, index=True)
     id_car = Column(Integer, ForeignKey("car.id"), nullable=False)
     description = Column(EncryptedType)
-    url = Column(EncryptedType)
+    url = Column(String, unique=False, index=False, nullable=False)
 
    # 🔗 relationship hacia Brand
     car = relationship("Car", back_populates="pictures")

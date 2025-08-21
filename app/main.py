@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from fastapi.responses import JSONResponse
 
-app = FastAPI()
+app = FastAPI(debug=True)
 print("✅ main.py loaded")
 
 origins = ["*"]  # Cambiar para producción
@@ -100,14 +100,19 @@ def post_brand(
         current_admin: models.User = Depends(auth_service.get_current_admin_user),
         db: Session = Depends(database.get_db)
 ):
-    filters = {
-        "name": brand.name
-    }
-    db_brand = brand_service.get_brands(db, filters)
-    if db_brand:
-        raise HTTPException(status_code=400, detail="Error: Marca de auto ya registrada")
-    new_brand = brand_service.post_brand(db, brand.name)
-    return new_brand
+    try:
+        filters = {
+            "name": brand.name
+        }
+        db_brand = brand_service.get_brands(db, filters)
+        if db_brand:
+            raise HTTPException(status_code=400, detail="Error: Marca de auto ya registrada")
+        new_brand = brand_service.post_brand(db, brand.name)
+        return new_brand
+    except Exception as e:
+        print(f"Internal error {e}")
+        raise HTTPException(status_code=500, detail="Something went wrong")
+
 
 @app.get("/brands/{id_brand}/cars", response_model=List[schemas.CarOut])
 def get_cars(
@@ -122,8 +127,8 @@ def get_cars(
 
 @app.post("/brands/{id_brand}/cars", response_model=schemas.CarOut)
 def post_car(
-        id_brand: int,
         car: schemas.CarCreate,
+        id_brand: int,
         current_admin: models.User = Depends(auth_service.get_current_admin_user),
         db: Session = Depends(database.get_db)
 ):
@@ -150,22 +155,20 @@ def get_pictures(
 
 @app.post("/brands/{id_brand}/cars/{id_car}/pictures", response_model=schemas.PictureOut)
 def post_picture(
+        picture: schemas.PictureCreate,
         id_brand: int,
         id_car: int,
-        picture: schemas.PictureCreate,
         current_admin: models.User = Depends(auth_service.get_current_admin_user),
         db: Session = Depends(database.get_db)
 ):
-    filters = {
-        "id_car": id_car
-    }
-    db_pictures = picture_service.get_pictures(db, filters)
-    if db_pictures:
-        raise HTTPException(status_code=400, detail="Error: Foto de auto ya registrada")
-    new_picture = picture_service.post_picture(
-        db,
-        id_car=id_car,
-        description=picture.description,
-        url=picture.url
-    )
-    return new_picture
+    try:
+        new_picture = picture_service.post_picture(
+            db,
+            id_car=id_car,
+            description=picture.description,
+            url=picture.url
+        )
+        return new_picture
+    except Exception as e:
+        print(f"Internal error {e}")
+        raise HTTPException(status_code=500, detail="Something went wrong")
