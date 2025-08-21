@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from fastapi.responses import JSONResponse
 
-app = FastAPI(debug=True)
+app = FastAPI()
 print("✅ main.py loaded")
 
 origins = ["*"]  # Cambiar para producción
@@ -172,3 +172,11 @@ def post_picture(
     except Exception as e:
         print(f"Internal error {e}")
         raise HTTPException(status_code=500, detail="Something went wrong")
+
+
+@app.get("/brands/{id_brand}/cars/{id_car}/pictures/{url}")
+def get_picture_raw(
+        url: str,
+        current_admin: models.User = Depends(auth_service.get_current_admin_user),  # Only admins can register
+):
+    return picture_service.get_picture_raw(url)
