@@ -23,7 +23,7 @@ def get_picture_raw(db: Session, id: int):
     pictures = get_pictures(db, filters)
     if len(pictures) == 0:
         raise ValueError(f"Pics not found for filters: {filters}")
-    url = pictures[0]['url']
+    url = pictures[0].url
     match = re.search(r'/d/([a-zA-Z0-9_-]+)', url)
     file_id = match.group(1) if match else None
 
