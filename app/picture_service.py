@@ -8,16 +8,27 @@ import io
 import re
 import os
 import json
+from dotenv import load_dotenv
 
-SERVICE_ACCOUNT_PATH = "./etc/secrets/powerfleet-google-service-account.json"
+load_dotenv()
+
+SERVICE_ACCOUNT_PATH_LOCALHOST = "./etc/secrets/powerfleet-google-service-account.json"
+SERVICE_ACCOUNT_PATH_RENDER = "/etc/secrets/powerfleet-google-service-account.json"
+ENVIRONMENT = os.getenv("ENVIRONMENT")
 
 
 def get_drive_service():
-    if not os.path.exists(SERVICE_ACCOUNT_PATH):
-        raise FileNotFoundError(f"Service account file not found at {SERVICE_ACCOUNT_PATH}")
+    service_account_path = None
+    if ENVIRONMENT == "LOCALHOST":
+        service_account_path = SERVICE_ACCOUNT_PATH_LOCALHOST
+    else:
+        service_account_path = SERVICE_ACCOUNT_PATH_RENDER
+
+    if not os.path.exists(service_account_path):
+        raise FileNotFoundError(f"Service account file not found at {service_account_path}")
 
     google_account_service_json = None
-    with open(SERVICE_ACCOUNT_PATH, "r") as f:
+    with open(service_account_path, "r") as f:
         google_account_service_json = json.load(f)
     creds = service_account.Credentials.from_service_account_info(google_account_service_json)
     return build("drive", "v3", credentials=creds)
