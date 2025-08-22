@@ -7,9 +7,15 @@ from app import models, schemas, database, auth_service, brand_service, car_serv
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from fastapi.responses import JSONResponse
+from cachetools import LRUCache
+from threading import Lock
+from fastapi.responses import StreamingResponse
+import io
 
 app = FastAPI()
 print("✅ main.py loaded")
+pictures_cache = LRUCache(maxsize=128)
+cache_lock = Lock()
 
 origins = ["*"]  # Cambiar para producción
 
@@ -168,6 +174,15 @@ def post_picture(
             description=picture.description,
             url=picture.url
         )
+
+        # Invalidate all pictures for this car (optional granularity)
+        with cache_lock:
+            keys_to_delete = [k for k in pictures_cache if k.startswith(f"{id_brand}:{id_car}:")]
+            for k in keys_to_delete:
+                print(f"Cache will be cleared by key: {k}")
+                del pictures_cache[k]
+                print(f"Cache cleared by key: {k}")
+
         return new_picture
     except Exception as e:
         print(f"Internal error {e}")
@@ -182,4 +197,15 @@ def get_picture_raw(
         current_admin: models.User = Depends(auth_service.get_current_admin_user),  # Only admins can register
         db: Session = Depends(database.get_db)
 ):
-    return picture_service.get_picture_raw(db, id_picture)
+    cache_key = f"{id_brand}:{id_car}:{id_picture}"
+
+    with cache_lock:
+        if cache_key in pictures_cache:
+            print(f"Picture found in cache with key: {cache_key}")
+            picture_bytes = pictures_cache[cache_key]
+        else:
+            print(f"Picture not found in cache with key: {cache_key}")
+            picture_bytes = picture_service.get_picture_raw(db, id_picture)
+            pictures_cache[cache_key] = picture_bytes
+
+    return StreamingResponse(io.BytesIO(picture_bytes), media_type="image/jpeg")

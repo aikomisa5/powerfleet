@@ -57,7 +57,7 @@ def get_picture_raw(db: Session, id: int):
         status, done = downloader.next_chunk()
 
     fh.seek(0)
-    return StreamingResponse(fh, media_type="image/jpeg")
+    return fh.read()
 
 def get_pictures(db: Session, filters: dict = None):
     query = db.query(Picture)
