@@ -10,8 +10,9 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(
     DATABASE_URL,
-    pool_size=10,  # máximo 10 conexiones
-    max_overflow=0
+    pool_size=15,  # máximo 10 conexiones
+    pool_recycle=600,
+    pool_pre_ping=True
 )
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 Base = declarative_base()
