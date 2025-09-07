@@ -194,7 +194,6 @@ def get_picture_raw(
         id_brand: int,
         id_car: int,
         id_picture: int,
-        current_admin: models.User = Depends(auth_service.get_current_admin_user),  # Only admins can register
         db: Session = Depends(database.get_db)
 ):
     cache_key = f"{id_brand}:{id_car}:{id_picture}"
